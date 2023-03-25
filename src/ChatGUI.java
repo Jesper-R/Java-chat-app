@@ -1,3 +1,10 @@
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -7,15 +14,18 @@
  *
  * @author jesper.rudegran
  */
-public class ChatGUI extends javax.swing.JFrame {
-
+public class ChatGUI extends javax.swing.JFrame implements Runnable{
+    
     /**
      * Creates new form ChatGUI
      */
     public ChatGUI() {
         initComponents();
     }
-
+    @Override
+    public void run(){
+        
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -38,6 +48,7 @@ public class ChatGUI extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList<>();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -45,7 +56,7 @@ public class ChatGUI extends javax.swing.JFrame {
 
         jLabel1.setText("Enter nickname:");
 
-        jButton1.setText("apply");
+        jButton1.setText("Start server");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -69,6 +80,13 @@ public class ChatGUI extends javax.swing.JFrame {
         });
         jScrollPane3.setViewportView(jList1);
 
+        jButton2.setText("connect");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -88,7 +106,9 @@ public class ChatGUI extends javax.swing.JFrame {
                                 .addGap(31, 31, 31)
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel3)))
+                                .addComponent(jLabel3)
+                                .addGap(59, 59, 59)
+                                .addComponent(jButton2)))
                         .addContainerGap(45, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 489, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -110,7 +130,8 @@ public class ChatGUI extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jButton1)
                         .addComponent(jLabel2)
-                        .addComponent(jLabel3))
+                        .addComponent(jLabel3)
+                        .addComponent(jButton2))
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel1)))
@@ -145,8 +166,17 @@ public class ChatGUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        //Server server = new Server();
+        //server.run();
+        Thread t = new Thread(r);
+        t.start();
     }//GEN-LAST:event_jButton1ActionPerformed
+   // public String name = jTextPane1.getText();
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        Thread t2 = new Thread(r2);
+        
+        t2.start();
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -179,12 +209,102 @@ public class ChatGUI extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new ChatGUI().setVisible(true);
+                
             }
         });
     }
+    
+    Runnable r = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("starting server");
+        Server server = new Server();
+        server.setNick(jTextPane1.getText());
+        server.run();
+        
+        
+    }};
+    /*
+    class ConnectionHandler implements Runnable{
 
+        private Socket client;
+        private BufferedReader in;
+        private PrintWriter out;
+        private String nickname;
+
+        public ConnectionHandler(Socket client, String nickname) {
+            this.client = client;
+            this.nickname = nickname;
+        }
+        
+
+        @Override
+        public void run(){
+            try {
+                out = new PrintWriter(client.getOutputStream(), true);
+                in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                //out.println("Enter nickname: ");
+                //nickname = in.readLine();
+                // can and handling with if statements
+                System.out.println(nickname + " connected!");
+                
+                broadcast(nickname + " joined the chat!");
+                String message;
+                while ((message = in.readLine()) != null){
+                    if (message.startsWith("/nick ")) {
+                        String[] messageSplit = message.split(" ", 2);
+                        if (messageSplit.length == 2) {
+                            broadcast(nickname + " renamed themselves to " + messageSplit[1]);
+                            System.out.println(nickname + " renamed themselves to " + messageSplit[1]);
+                            nickname = messageSplit[1];
+                            out.println("Successfully changed nickname to " + nickname);
+                        } else {
+                            out.println("No nickname provided");
+                        }
+                    } else if (message.startsWith("/quit")){
+                        broadcast(nickname + " left the chat");
+                        System.out.println(nickname + " disconnected");
+                        shutdown();
+                    } else {
+                        broadcast(nickname + ": " + message);
+                    }
+                }
+            } catch (IOException e){
+                shutdown();
+            }
+        }
+
+        public void sendMessage(String message) {
+            out.println(message);
+        }
+
+        public void shutdown() {
+            try {
+                in.close();
+                out.close();
+                if (!client.isClosed()) {
+                    client.close();
+                }
+            } catch (IOException e) {
+                //ignore
+            }
+        }
+    }
+    */
+    Runnable r2 = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("starting client");
+        Client client = new Client(jTextPane1.getText());
+        jLabel3.setText("connected");
+        client.run();
+       
+    }};
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -196,6 +316,7 @@ public class ChatGUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextPane jTextPane1;
+    public static javax.swing.JTextPane jTextPane1;
     // End of variables declaration//GEN-END:variables
 }
+
