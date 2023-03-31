@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class Client extends ChatGUI implements Runnable {
+public class Client implements Runnable {
 
     private Socket client;
     private BufferedReader in;

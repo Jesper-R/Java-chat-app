@@ -44,7 +44,10 @@ public class Server implements Runnable{
     public void broadcast(String message) {
         for (ConnectionHandler ch: connections) {
             if (ch != null){
+                
                 ch.sendMessage(message);
+                //ch.out.println("s");
+                
             }
         }
     }
@@ -64,7 +67,7 @@ public class Server implements Runnable{
         }
 
     }
-    class ConnectionHandler implements Runnable{
+    class ConnectionHandler extends ChatGUI implements Runnable{
 
         private Socket client;
         private BufferedReader in;
@@ -86,7 +89,7 @@ public class Server implements Runnable{
                 //nickname = in.readLine();
                 // can and handling with if statements
                 //System.out.println(nickname + " connected!");
-                System.out.println(nickname+ " connected!");
+                System.out.println(nickname + " connected!");
                 broadcast(nickname + " joined the chat!");
                 String message;
                 while ((message = in.readLine()) != null){
@@ -106,6 +109,7 @@ public class Server implements Runnable{
                         shutdown();
                     } else {
                         broadcast(nickname + ": " + message);
+                        out.println(message);
                     }
                 }
             } catch (IOException e){
@@ -114,7 +118,9 @@ public class Server implements Runnable{
         }
 
         public void sendMessage(String message) {
-            out.println(message);
+            System.out.println(message);
+            //return message;
+            //jTextArea1.setText(message);
         }
 
         public void shutdown() {
