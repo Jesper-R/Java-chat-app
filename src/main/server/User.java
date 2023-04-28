@@ -1,5 +1,5 @@
 package main.server;
-
+import javax.swing.*;
 import java.net.Socket;
 import java.util.UUID;
 public class User {
@@ -9,9 +9,14 @@ public class User {
     private boolean isNameSent = false;
     private UUID uuid;
 
-    public User(Socket socket, String name) {
+    private JList<String> userList;
+    public JList<String> getUserList(){
+        return userList;
+    }
+    public User(Socket socket, String name, JList<String> userList) {
         this.socket = socket;
         this.name = name;
+        this.userList = userList;
         this.uuid = UUID.randomUUID();
     }
 

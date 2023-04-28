@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -17,10 +18,17 @@ public class ClientGUI extends javax.swing.JFrame {
     private String messages = "";
     private Socket serverSocket;
     private boolean connected = false;
+    DefaultListModel<String> listModel = new DefaultListModel<>();
 
+    private StringBuilder items;
+
+    public JList<String> getUserList() {
+        return userList;
+    }
     private void connectToServer() {
         try {
-            serverSocket = new Socket(HOST, PORT);
+            System.out.println("test");
+            serverSocket = new Socket("127.0.0.1", 9000);
             System.out.println("Connected to server");
             connected = true;
             textArea.setText("Connected to server\n");
@@ -63,11 +71,16 @@ public class ClientGUI extends javax.swing.JFrame {
                 }
                 if (message.contains(":")) {
                     String[] messageSplitted = message.split(": ");
-                    messageSplitted[0] = " <strong>" + messageSplitted[0] + "</strong>" + ": ";
+                    messageSplitted[0] = "" + messageSplitted[0] + "" + ": ";
                     message = String.join("", messageSplitted);
 
                 }
-                messages += message + " <br>";
+                else {
+                    if(message.contains("[USERS]")){
+                        //UPDATE USER LIST
+                    }
+                }
+                messages += message + " \n";
                 textArea.setText(messages);
 
                 //chatFieldTextArea.setText(message + "\n"); //append
@@ -102,6 +115,7 @@ public class ClientGUI extends javax.swing.JFrame {
             throw new RuntimeException(e);
         }
     }
+
     private void changeServerDetails() {
         String host = JOptionPane.showInputDialog("Enter host");
         String port = JOptionPane.showInputDialog("Enter port");
@@ -157,11 +171,14 @@ public class ClientGUI extends javax.swing.JFrame {
             this.setTitle(name);
             sentName = true;
         }
-        messages += "du: " + message + "<br>";
+        messages += "du: " + message + "\n";
         textArea.setText(messages);
         //chatFieldTextArea.setText("du: " + message + "\n"); //append
         sendMessageToServer(message, serverSocket);
+        /*for (int i = 0; i<listModel.size(); i++) {
 
+        }*/
+        //sendMessageToServer("SELECTED ITEMS: " + items,serverSocket);
         sendMessage.setText("");
 
 
@@ -195,16 +212,23 @@ public class ClientGUI extends javax.swing.JFrame {
         connectBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 connectBtnActionPerformed(evt);
+                connectToServer();
             }
         });
 
         connectedUsersLabel.setText("Connected Users");
-
+        userList.setModel(listModel);
+        listModel.addElement("Item 1");
+        listModel.addElement("Item 2");
+        listModel.addElement("Item 3");
+        listModel.addElement("Item 4");
+        listModel.addElement("Item 5");
+        /*
         userList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
-        });
+        });*/
         connectedUsersList.setViewportView(userList);
 
         sendBtn.setText("Send");

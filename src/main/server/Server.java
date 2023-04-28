@@ -1,5 +1,7 @@
 package main.server;
+import main.client.ClientGUI;
 
+import javax.swing.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,18 +30,15 @@ public class Server{
                 }
             }).start();
 
-            User serverUser = new User(null, null);
+            User serverUser = new User(null, null, null);
             serverUser.setAdmin(true);
-
-            Thread checkMessagesThread = new Thread(checkMessagesRunnable);
-            checkMessagesThread.start();
 
             // Wait for client to connect
             System.out.println("Waiting for clients to connect");
             while (!done) {
-                //UserAdministration.addUser(new User(serverSocket.accept(), null));
-                /*System.out.println("Client connected from " + UserAdministration.getUsers()
-                        .get(UserAdministration.getUsers().size() - 1).getSocket().getInetAddress());*/
+                UserControl.addUser(new User(serverSocket.accept(), null, null));
+                System.out.println("Client connected from " + UserControl.getUsers()
+                        .get(UserControl.getUsers().size() - 1).getSocket().getInetAddress());
             }
         } catch (Exception e) {
             //logger.fatal("Error: " + e.getMessage());
@@ -48,17 +47,19 @@ public class Server{
     }
 
     private void sendMessageToClient(String sendingUser, String message, Socket currentClientSocket) {
-        UserAdministration.getUsers().forEach(user -> {
+        UserControl.getUsers().forEach(user -> {
             if (user.getSocket() != currentClientSocket) {
-                ChatControl.sendMessageToUser(user, sendingUser + ": " + message);
+                UserControl.sendMessageToUser(user, sendingUser + ": " + message);
             }
         });
     }
 
     private synchronized void checkForMessages() throws IOException {
         // Check for messages from clients
-        List<User> users = UserAdministration.getUsers();
+        List<User> users = UserControl.getUsers();
         for (User user : users){
+
+            //user.getUserList().add();
             try {
                 InputStream inputStream = user.getSocket().getInputStream();
                 int data;
@@ -81,21 +82,29 @@ public class Server{
                             user.setName(message);
                         }
                         user.setNameSent(true);
+                        UserControl.sendMessageToEveryone(UserControl.getAllUsers());
+                        // TODO: add to disconnect aswell
                         return;
                     }
 
                     // Get the first character of the message
                     if (message.charAt(0) == '/'){
                         // Remove the first character
-                        message = message.substring(1);
+                        /*message = message.substring(1);
                         Command command = CommandFactory.getCommand(message, user);
                         command.execute();
-                        logger.info(user.getName() + " executed " + command.getCommand());
-                        return;
+                        logger.info(user.getName() + " executed " + command.getCommand());*/
+                        //return;
                     }
                     //logger.info(user.getName() + ": " + message);
                     System.out.println(user.getName() + ": " + message);
-                    sendMessageToClient(user.getName(), message, user.getSocket());
+                    UserControl.getUsers().forEach(client -> {
+                        if (client.getSocket() != user.getSocket()){
+                            UserControl.sendMessageToUser(client, client.getName() + ": " + message);
+                        }
+                    });
+                    //sendMessageToClient(user.getName(), message, user.getSocket());
+                    //UserControl.sendMessageToEveryone("reeeeeeee");
                 }
             } catch (IOException e) {
                 //logger.warn("User " + user.getName() + " has probably disconnected");
@@ -105,7 +114,7 @@ public class Server{
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-            } catch (PermissionDeniedException ignored) {}
+            } catch (Exception e) {}
         }
     }
 
