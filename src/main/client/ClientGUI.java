@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +28,24 @@ public class ClientGUI extends javax.swing.JFrame {
     }
     private void connectToServer() {
         try {
-            System.out.println("test");
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                public void run() {
+                    System.out.println("In shutdown hook");
+                    if (connected) {
+                        sendMessageToServer("/dc", serverSocket);
+                        sendMessageToServer("Someone just fucking disconnected", serverSocket);
+                        connected = false;
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    System.out.println("After shutdown hook");
+                    disconnectFromServer();
+                }
+            }, "Shutdown-thread"));
+            System.out.println("hook created");
             serverSocket = new Socket("127.0.0.1", 9000);
             System.out.println("Connected to server");
             connected = true;
@@ -48,6 +66,7 @@ public class ClientGUI extends javax.swing.JFrame {
         // Check for messages from server
         try {
             InputStream inputStream = socket.getInputStream();
+            boolean addMessage = true;
             int data;
             ArrayList<Character> messageArr = new ArrayList<>();
             while (inputStream.available() > 0) {
@@ -75,19 +94,24 @@ public class ClientGUI extends javax.swing.JFrame {
                     message = String.join("", messageSplitted);
 
                 }
-                else {
-                    if(message.contains("[USERS]")){
-                        //UPDATE USER LIST
+                if (message.contains("[USERS]")) {
+                    String[] users = message.split(";");
+                    //users = Arrays.copyOfRange(users, 1, users.length);
+                    listModel.clear();
+                    for (String user : users) {
+                        listModel.addElement(user);
                     }
+                    message = "";
+                    addMessage = false;
                 }
-                messages += message + " \n";
+                if (addMessage) {messages += message + " \n";}
                 textArea.setText(messages);
 
                 //chatFieldTextArea.setText(message + "\n"); //append
             }
 
         } catch (IOException e) {
-            System.out.println("Closed connection to server");
+            //System.out.println("Closed connection to server");
             connected = false;
         }
     }
@@ -186,6 +210,7 @@ public class ClientGUI extends javax.swing.JFrame {
 
     public ClientGUI() {
         initComponents();
+
     }
 
     @SuppressWarnings("unchecked")
@@ -218,11 +243,7 @@ public class ClientGUI extends javax.swing.JFrame {
 
         connectedUsersLabel.setText("Connected Users");
         userList.setModel(listModel);
-        listModel.addElement("Item 1");
-        listModel.addElement("Item 2");
-        listModel.addElement("Item 3");
-        listModel.addElement("Item 4");
-        listModel.addElement("Item 5");
+        listModel.addElement("No users connected");
         /*
         userList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -342,7 +363,9 @@ public class ClientGUI extends javax.swing.JFrame {
                 new ClientGUI().setVisible(true);
             }
         });
+
     }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton connectBtn;

@@ -22,6 +22,18 @@ public class UserControl{
         }
     }
 
+    public static void updateUsers() {
+        synchronized (users){
+            users.forEach(user -> {
+                //System.out.println("usersocket" + user.getSocket().isClosed());
+                if (user.getSocket().isClosed()){
+                    users.remove(user);
+                }
+            });
+        }
+        System.out.println("Users: " + users.stream().map(User::getName).collect(Collectors.toList()));
+    }
+
     /**
      * @deprecated Use {@link #getUserByEitherNameOrUuid(String)} instead
      * @param name the name of the user to find
@@ -118,10 +130,10 @@ public class UserControl{
         System.out.println(users.stream()
                 .map(User::getName)
                 .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase())
-                .collect(Collectors.joining(",")));
+                .collect(Collectors.joining(";")));
         return users.stream()
                 .map(User::getName)
                 .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase())
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining(";"));
     }
 }

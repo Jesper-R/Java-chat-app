@@ -39,6 +39,7 @@ public class Server{
                 UserControl.addUser(new User(serverSocket.accept(), null, null));
                 System.out.println("Client connected from " + UserControl.getUsers()
                         .get(UserControl.getUsers().size() - 1).getSocket().getInetAddress());
+                //UserControl.sendMessageToEveryone("[USERS]: ");
             }
         } catch (Exception e) {
             //logger.fatal("Error: " + e.getMessage());
@@ -58,7 +59,6 @@ public class Server{
         // Check for messages from clients
         List<User> users = UserControl.getUsers();
         for (User user : users){
-
             //user.getUserList().add();
             try {
                 InputStream inputStream = user.getSocket().getInputStream();
@@ -82,25 +82,36 @@ public class Server{
                             user.setName(message);
                         }
                         user.setNameSent(true);
-                        UserControl.sendMessageToEveryone(UserControl.getAllUsers());
+                        UserControl.updateUsers();
+                        UserControl.sendMessageToEveryone("[USERS];" + UserControl.getAllUsers());
                         // TODO: add to disconnect aswell
                         return;
                     }
 
                     // Get the first character of the message
-                    if (message.charAt(0) == '/'){
+                    if (message.startsWith("/users")){
+                        UserControl.updateUsers();
+                        UserControl.sendMessageToEveryone("[USERS];" + UserControl.getAllUsers());
                         // Remove the first character
                         /*message = message.substring(1);
                         Command command = CommandFactory.getCommand(message, user);
                         command.execute();
                         logger.info(user.getName() + " executed " + command.getCommand());*/
-                        //return;
+                        return;
+                    }
+                    if (message.startsWith("/dc")) {
+                        user.getSocket().close();
+                        UserControl.updateUsers();
+                        UserControl.sendMessageToEveryone("[USERS];" + UserControl.getAllUsers());
+                        System.out.println(user.getName() + " disconnected");
+                        return;
                     }
                     //logger.info(user.getName() + ": " + message);
                     System.out.println(user.getName() + ": " + message);
+                    //UserControl.sendMessageToUser(user, user.getName() + ": " + message);
                     UserControl.getUsers().forEach(client -> {
                         if (client.getSocket() != user.getSocket()){
-                            UserControl.sendMessageToUser(client, client.getName() + ": " + message);
+                            UserControl.sendMessageToUser(client, user.getName() + ": " + message);
                         }
                     });
                     //sendMessageToClient(user.getName(), message, user.getSocket());
