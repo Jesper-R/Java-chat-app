@@ -130,7 +130,7 @@ public class ClientGUI extends javax.swing.JFrame {
 
     private void sendNameToServer(String name, Socket socket) {
         // Send message to server
-        try {
+        try{
             String encodedMessage = Base64.getEncoder().encodeToString(name.getBytes());
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             out.print(encodedMessage);
@@ -189,12 +189,6 @@ public class ClientGUI extends javax.swing.JFrame {
             this.setTitle(message.split(" ")[1]);
         }
 
-        if (!sentName) {
-            String name = JOptionPane.showInputDialog("Enter name");
-            sendNameToServer(name, serverSocket);
-            this.setTitle(name);
-            sentName = true;
-        }
         messages += "du: " + message + "\n";
         textArea.setText(messages);
         //chatFieldTextArea.setText("du: " + message + "\n"); //append
@@ -206,6 +200,17 @@ public class ClientGUI extends javax.swing.JFrame {
         sendMessage.setText("");
 
 
+    }
+
+    public void setName() {
+        if (sentName) {return;}
+        if (!sentName) {
+            String name = JOptionPane.showInputDialog("Enter name");
+            name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+            sendNameToServer(name, serverSocket);
+            this.setTitle(name);
+            sentName = true;
+        }
     }
 
     public ClientGUI() {
@@ -238,6 +243,7 @@ public class ClientGUI extends javax.swing.JFrame {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 connectBtnActionPerformed(evt);
                 connectToServer();
+                setName();
             }
         });
 

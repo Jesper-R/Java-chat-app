@@ -25,29 +25,12 @@ public class UserControl{
     public static void updateUsers() {
         synchronized (users){
             users.forEach(user -> {
-                //System.out.println("usersocket" + user.getSocket().isClosed());
                 if (user.getSocket().isClosed()){
                     users.remove(user);
                 }
             });
         }
         System.out.println("Users: " + users.stream().map(User::getName).collect(Collectors.toList()));
-    }
-
-    /**
-     * @deprecated Use {@link #getUserByEitherNameOrUuid(String)} instead
-     * @param name the name of the user to find
-     * @return the user with the given name, or null if no user with that name exists
-     */
-    public static User getUserByName(String name){
-        synchronized (users){
-            for (User user : users) {
-                if (user.getName().equalsIgnoreCase(name)){
-                    return user;
-                }
-            }
-        }
-        return null;
     }
 
     public static User getUserByEitherNameOrUuid(String nameOrUuid){
@@ -59,45 +42,6 @@ public class UserControl{
             }
         }
         return null;
-    }
-
-
-    /**
-     * @deprecated Use {@link #getUserByEitherNameOrUuid(String)} instead
-     * @param uuid the uuid of the user to find
-     * @return the user with the given uuid, or null if no user with that uuid exists
-     */
-    public static User getUserByUuid(UUID uuid){
-        synchronized (users){
-            for (User user : users) {
-                if (user.getUuid().toString().equals(uuid.toString())){
-                    return user;
-                }
-            }
-        }
-        return null;
-    }
-
-    public synchronized static void deleteUser(User user) {
-        try {
-            user.getSocket().close();
-            users.removeIf(users -> true);
-        }
-        catch (Exception e){
-            //throw new UserNotFoundException();
-        }
-    }
-
-    public static void kickAllUsers() {
-        users.forEach(user -> {
-            try {
-                UserControl.sendMessageToUser(user, "You have been kicked from the server");
-                user.getSocket().close();
-                deleteUser(user);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
     }
 
     public synchronized static void sendMessageToUser(User user, String message) {
@@ -121,7 +65,6 @@ public class UserControl{
         out.flush();
     }
 
-    @SuppressWarnings("unused")
     public synchronized static void sendMessageToEveryone(String message){
         UserControl.getUsers().forEach(user -> sendMessageToUser(user, message));
     }
