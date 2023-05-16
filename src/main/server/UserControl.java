@@ -25,7 +25,7 @@ public class UserControl{
     public static void updateUsers() {
         synchronized (users){
             users.forEach(user -> {
-                if (user.getSocket().isClosed() || user == null){
+                if (user.getSocket().isClosed()){
                     users.remove(user);
                 }
             });

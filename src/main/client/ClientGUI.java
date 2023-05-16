@@ -100,6 +100,8 @@ public class ClientGUI extends javax.swing.JFrame {
 
                 }
                 if (message.contains("[USERS]")) {
+                    System.out.println("GOT USERS FROM SERVER");
+                    System.out.println(message);
                     String[] users = message.split(";");
                     //users = Arrays.copyOfRange(users, 1, users.length);
                     listModel.clear();
@@ -257,15 +259,13 @@ public class ClientGUI extends javax.swing.JFrame {
         });
 
         connectedUsersLabel.setText("Connected Users");
+        userList.setModel(listModel);
+        listModel.addElement("Not connected");
 
-        userList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Not connected" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
         connectedUsersList.setViewportView(userList);
 
         sendBtn.setText("Send");
+
         sendBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sendBtnActionPerformed(evt);
