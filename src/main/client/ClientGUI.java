@@ -19,6 +19,7 @@ public class ClientGUI extends javax.swing.JFrame {
     private String messages = "";
     private Socket serverSocket;
     private boolean connected = false;
+    private String name;
     DefaultListModel<String> listModel = new DefaultListModel<>();
 
     private StringBuilder items;
@@ -47,9 +48,13 @@ public class ClientGUI extends javax.swing.JFrame {
             }, "Shutdown-thread"));
             System.out.println("hook created");
             serverSocket = new Socket("127.0.0.1", 9000);
-            System.out.println("Connected to server");
+            //System.out.println("Connected to server");
             connected = true;
-            textArea.setText("Connected to server\n");
+            connectBtn.setEnabled(false);
+            advanceConnectBtn.setEnabled(false);
+            disconnectBtn.setEnabled(true);
+            sendBtn.setEnabled(true);
+            //textArea.setText("Connected to server\n");
             new Thread(() -> {
                 while (true){
                     checkForMessages(serverSocket);
@@ -205,9 +210,9 @@ public class ClientGUI extends javax.swing.JFrame {
     public void setName() {
         if (sentName) {return;}
         if (!sentName) {
-            String name = JOptionPane.showInputDialog("Enter name");
+            name = JOptionPane.showInputDialog("Enter name");
             name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
-            sendNameToServer(name, serverSocket);
+            //sendNameToServer(name, serverSocket);
             this.setTitle(name);
             sentName = true;
         }
@@ -215,7 +220,8 @@ public class ClientGUI extends javax.swing.JFrame {
 
     public ClientGUI() {
         initComponents();
-
+        sendBtn.setEnabled(false);
+        disconnectBtn.setEnabled(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -231,31 +237,32 @@ public class ClientGUI extends javax.swing.JFrame {
         sendBtn = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         sendMessage = new javax.swing.JTextArea();
+        advanceConnectBtn = new javax.swing.JButton();
+        disconnectBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        textArea.setEditable(false);
         textArea.setColumns(20);
         textArea.setRows(5);
+        textArea.setFocusable(false);
+        textArea.setRequestFocusEnabled(false);
         jScrollPane1.setViewportView(textArea);
 
         connectBtn.setText("Connect");
         connectBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 connectBtnActionPerformed(evt);
-                connectToServer();
-                setName();
             }
         });
 
         connectedUsersLabel.setText("Connected Users");
-        userList.setModel(listModel);
-        listModel.addElement("No users connected");
-        /*
+
         userList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            String[] strings = { "Not connected" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
-        });*/
+        });
         connectedUsersList.setViewportView(userList);
 
         sendBtn.setText("Send");
@@ -271,6 +278,20 @@ public class ClientGUI extends javax.swing.JFrame {
         sendMessage.setWrapStyleWord(true);
         jScrollPane2.setViewportView(sendMessage);
 
+        advanceConnectBtn.setText("Advanced Connect");
+        advanceConnectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                advanceConnectBtnActionPerformed(evt);
+            }
+        });
+
+        disconnectBtn.setText("Disconnect");
+        disconnectBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disconnectBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -281,41 +302,50 @@ public class ClientGUI extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 317, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(sendBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(sendBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 446, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(connectedUsersList)
-                        .addGap(16, 16, 16))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(connectedUsersLabel)
+                        .addGap(35, 35, 35))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(connectedUsersLabel)
-                                .addGap(31, 31, 31))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(connectBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(34, 34, 34))))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(advanceConnectBtn))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(connectedUsersList)
+                                    .addComponent(connectBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(disconnectBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(12, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(disconnectBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(connectedUsersLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(connectedUsersList, javax.swing.GroupLayout.PREFERRED_SIZE, 282, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(connectedUsersList))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 304, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(sendBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(connectBtn)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(connectBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(advanceConnectBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -324,19 +354,36 @@ public class ClientGUI extends javax.swing.JFrame {
 
 
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
-        // TODO add your handling code here:
-    }   //GEN-LAST:event_connectBtnActionPerformed
+        setName();
+        connectToServer();
+        sendNameToServer(name, serverSocket);
+        System.out.println("Name sent to server");
+    }//GEN-LAST:event_connectBtnActionPerformed
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
-        // TODO add your handling code here:
+        /*// TODO add your handling code here:
         if (sendBtn.getText().equalsIgnoreCase("connect")) {
             changeServerDetails();
             connectToServer();
         } else {
-            sendMessageAndLogIt();
-        }
-
+            
+        }*/
+        sendMessageAndLogIt();
     }//GEN-LAST:event_sendBtnActionPerformed
+
+    private void advanceConnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advanceConnectBtnActionPerformed
+        try {
+            changeServerDetails();
+            connectToServer();
+            setName();
+        } catch(Exception e) {
+            
+        }
+    }//GEN-LAST:event_advanceConnectBtnActionPerformed
+
+    private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
+        disconnectFromServer();
+    }//GEN-LAST:event_disconnectBtnActionPerformed
 
 
     public static void main(String args[]) {
@@ -374,9 +421,11 @@ public class ClientGUI extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton advanceConnectBtn;
     private javax.swing.JButton connectBtn;
     private javax.swing.JLabel connectedUsersLabel;
     private javax.swing.JScrollPane connectedUsersList;
+    private javax.swing.JButton disconnectBtn;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton sendBtn;

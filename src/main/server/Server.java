@@ -39,6 +39,10 @@ public class Server{
                 System.out.println("Client connected from " + UserControl.getUsers()
                         .get(UserControl.getUsers().size() - 1).getSocket().getInetAddress());
                 //UserControl.sendMessageToEveryone("[USERS]: ");
+                UserControl.sendMessageToEveryone("Sending users to u now");
+                UserControl.updateUsers();
+                UserControl.sendMessageToEveryone("[USERS];" + UserControl.getAllUsers());
+
             }
         } catch (Exception e) {
             //logger.fatal("Error: " + e.getMessage());
