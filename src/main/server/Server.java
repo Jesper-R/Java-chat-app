@@ -106,7 +106,6 @@ public class Server{
                         user.getSocket().close();
                         UserControl.updateUsers();
                         UserControl.sendMessageToEveryone("[USERS];" + UserControl.getAllUsers());
-                        System.out.println("[ALL USERS CONNECTED];" + UserControl.getAllUsers());
                         System.out.println(user.getName() + " disconnected");
                         return;
                     }

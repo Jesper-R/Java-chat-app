@@ -20,7 +20,6 @@ public class ClientGUI extends javax.swing.JFrame {
     private Socket serverSocket;
     private boolean connected = false;
     private String name;
-    private int connectAmount = 0;
     DefaultListModel<String> listModel = new DefaultListModel<>();
 
     private StringBuilder items;
@@ -163,18 +162,12 @@ public class ClientGUI extends javax.swing.JFrame {
         }
     }
 
-
     private void disconnectFromServer() {
         try {
             serverSocket.close();
             connected = false;
             //button.setText("Connect");
             sentName = false;
-            connectBtn.setEnabled(true);
-            advanceConnectBtn.setEnabled(true);
-            disconnectBtn.setEnabled(false);
-            //listModel.clear();
-            textArea.setText("Disconnected from server");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -359,26 +352,12 @@ public class ClientGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void restart() {
-        if (connectAmount >= 1) {
-            ClientGUI c2 = new ClientGUI();
-            c2.setVisible(true);
-            //this.setVisible(false);
-            this.dispose();
-        }
 
-    }
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
-        try {
-            setName();
-            connectToServer();
-            sendNameToServer(name, serverSocket);
-            System.out.println("Name sent to server");
-            connectAmount += 1;
-        } catch (Exception e) {
-
-        }
-
+        setName();
+        connectToServer();
+        sendNameToServer(name, serverSocket);
+        System.out.println("Name sent to server");
     }//GEN-LAST:event_connectBtnActionPerformed
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
@@ -398,19 +377,12 @@ public class ClientGUI extends javax.swing.JFrame {
             connectToServer();
             setName();
         } catch(Exception e) {
-
+            
         }
     }//GEN-LAST:event_advanceConnectBtnActionPerformed
 
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
-
-        try {
-            sendMessageToServer("/dc", serverSocket);
-            disconnectFromServer();
-        } catch (Exception e) {
-            System.out.println("Error disconnecting from server");
-        }
-        restart();
+        disconnectFromServer();
     }//GEN-LAST:event_disconnectBtnActionPerformed
 
 
