@@ -1,8 +1,6 @@
 package main.client;
 
 import javax.swing.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -248,27 +246,14 @@ public class ClientGUI extends javax.swing.JFrame {
         sendBtn = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         sendMessage = new javax.swing.JTextArea();
-        sendMessage.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    e.consume();
-                    System.out.println("ENTER PRESSED");
-                    sendMessageAndLogIt();
-                }
-            }
-        });
         advanceConnectBtn = new javax.swing.JButton();
         disconnectBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setResizable(false);
 
         textArea.setEditable(false);
         textArea.setColumns(20);
-        textArea.setLineWrap(true);
         textArea.setRows(5);
-        textArea.setWrapStyleWord(true);
         textArea.setFocusable(false);
         textArea.setRequestFocusEnabled(false);
         jScrollPane1.setViewportView(textArea);
@@ -283,9 +268,11 @@ public class ClientGUI extends javax.swing.JFrame {
         connectedUsersLabel.setText("Connected Users");
         userList.setModel(listModel);
         listModel.addElement("Not connected");
+
         connectedUsersList.setViewportView(userList);
 
         sendBtn.setText("Send");
+
         sendBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sendBtnActionPerformed(evt);
@@ -370,7 +357,6 @@ public class ClientGUI extends javax.swing.JFrame {
         );
 
         pack();
-        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void restart() {
@@ -403,27 +389,8 @@ public class ClientGUI extends javax.swing.JFrame {
         } else {
             
         }*/
-        if(sendMessage.getText().equals("")) {
-            return;
-        } else {
-            sendMessageAndLogIt();
-        }
-
+        sendMessageAndLogIt();
     }//GEN-LAST:event_sendBtnActionPerformed
-
-    public void keyTyped(KeyEvent e) {
-        int key = e.getKeyCode();
-        if(key == KeyEvent.VK_ENTER) {
-            e.consume();
-            if(sendMessage.getText().equals("")) {
-                return;
-            } else {
-                System.out.println("key press");
-                sendMessageAndLogIt();
-            }
-        }
-    }
-
 
     private void advanceConnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advanceConnectBtnActionPerformed
         try {
