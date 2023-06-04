@@ -23,14 +23,9 @@ public class ClientGUI extends javax.swing.JFrame {
     private boolean connected = false;
     private String name;
     DefaultListModel<String> listModel = new DefaultListModel<>();
-
-    private StringBuilder items;
-
-    public JList<String> getUserList() {
-        return userList;
-    }
     private void connectToServer() {
         try {
+            // Adds shutdown hook so upon exit the server will be notified
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 public void run() {
                     System.out.println("In shutdown hook");
@@ -45,23 +40,25 @@ public class ClientGUI extends javax.swing.JFrame {
                         }
                     }
                     System.out.println("After shutdown hook");
+                    sendMessageToServer("/dc", serverSocket);
                     disconnectFromServer();
                 }
             }, "Shutdown-thread"));
             System.out.println("hook created");
+
             serverSocket = new Socket(HOST, PORT);
-            //System.out.println("Connected to server");
             connected = true;
             connectBtn.setEnabled(false);
             advanceConnectBtn.setEnabled(false);
             disconnectBtn.setEnabled(true);
             sendBtn.setEnabled(true);
-            //textArea.setText("Connected to server\n");
+
             new Thread(() -> {
                 while (true){
                     checkForMessages(serverSocket);
                 }
             }).start();
+
         } catch (IOException e) {
             System.out.println("Failed to connect to server");
             System.out.println("Error: " + e.getMessage());
@@ -70,41 +67,32 @@ public class ClientGUI extends javax.swing.JFrame {
     }
 
     private void checkForMessages(Socket socket) {
-        // Check for messages from server
+        // Check for messages
         try {
+            // Gets message
             InputStream inputStream = socket.getInputStream();
             boolean addMessage = true;
             int data;
             ArrayList<Character> messageArr = new ArrayList<>();
+            // Reads message into array
             while (inputStream.available() > 0) {
                 data = inputStream.read();
                 messageArr.add((char) data);
             }
+
             if (messageArr.size() > 0) {
-                // From a ArrayList of characters to a String
+                // Decodes message
                 String encodedMessage = messageArr.stream()
                         .map(Objects::toString)
                         .collect(Collectors.joining());
-
                 String message = new String(Base64.getDecoder().decode(encodedMessage));
-                if (message.equals("You have been kicked from the server")) {
-                    System.out.println("You have been kicked from the server");
-                    textArea.setText("You have been kicked from the server");
-                    //button.setText("Connect");
-                    sentName = false;
-                    serverSocket.close();
-                    return;
-                }
-                if (message.contains(":")) {
-                    String[] messageSplitted = message.split(": ");
-                    messageSplitted[0] = "" + messageSplitted[0] + "" + ": ";
-                    message = String.join("", messageSplitted);
 
-                }
                 if (message.contains("[USERS]")) {
+                    // Gets user update from server and updates the list
                     System.out.println("GOT USERS FROM SERVER");
                     System.out.println(message);
                     String[] users = message.split(";");
+                    // Removes the first part of the array which is the command
                     users = Arrays.copyOfRange(users, 1, users.length);
                     listModel.clear();
                     for (String user : users) {
@@ -113,14 +101,12 @@ public class ClientGUI extends javax.swing.JFrame {
                     message = "";
                     addMessage = false;
                 }
+                // Adds message to chat if it is supposed to
                 if (addMessage) {messages += message + " \n";}
                 textArea.setText(messages);
-
-                //chatFieldTextArea.setText(message + "\n"); //append
             }
-
         } catch (IOException e) {
-            //System.out.println("Closed connection to server");
+            System.out.println("Closed connection to server");
             connected = false;
         }
     }
@@ -129,18 +115,6 @@ public class ClientGUI extends javax.swing.JFrame {
         // Send message to server
         try {
             String encodedMessage = Base64.getEncoder().encodeToString(message.getBytes());
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            out.print(encodedMessage);
-            out.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void sendNameToServer(String name, Socket socket) {
-        // Send message to server
-        try{
-            String encodedMessage = Base64.getEncoder().encodeToString(name.getBytes());
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             out.print(encodedMessage);
             out.flush();
@@ -168,25 +142,28 @@ public class ClientGUI extends javax.swing.JFrame {
         try {
             serverSocket.close();
             connected = false;
-            //button.setText("Connect");
             sentName = false;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void sendMessageAndLogIt() {
+    private void sendMessage() {
         if (!connected) {
             changeServerDetails();
             return;
         }
         String message = sendMessage.getText();
+
+        // If statements to catch commands and execute them
+
         if (message.equalsIgnoreCase("/dc")){
             sendMessageToServer("/dc", serverSocket);
             textArea.setText("Disconnected from server");
             disconnectFromServer();
             return;
         }
+
         if(message.equalsIgnoreCase("/clear")){
             textArea.setText("");
             messages = "";
@@ -198,25 +175,19 @@ public class ClientGUI extends javax.swing.JFrame {
             this.setTitle(message.split(" ")[1]);
         }
 
-        messages += "du: " + message + "\n";
+        // Updates GUI and sends message to server
+        messages += "You: " + message + "\n";
         textArea.setText(messages);
-        //chatFieldTextArea.setText("du: " + message + "\n"); //append
         sendMessageToServer(message, serverSocket);
-        /*for (int i = 0; i<listModel.size(); i++) {
-
-        }*/
-        //sendMessageToServer("SELECTED ITEMS: " + items,serverSocket);
         sendMessage.setText("");
-
-
     }
 
     public void setName() {
         if (sentName) {return;}
         if (!sentName) {
             name = JOptionPane.showInputDialog("Enter name");
+            // Formats name
             name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
-            //sendNameToServer(name, serverSocket);
             this.setTitle(name);
             sentName = true;
         }
@@ -241,13 +212,14 @@ public class ClientGUI extends javax.swing.JFrame {
         sendBtn = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         sendMessage = new javax.swing.JTextArea();
+        // Sets up the enter key to send messages
         sendMessage.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     e.consume();
                     System.out.println("ENTER PRESSED");
-                    sendMessageAndLogIt();
+                    sendMessage();
                 }
             }
         });
@@ -375,40 +347,15 @@ public class ClientGUI extends javax.swing.JFrame {
         } catch (Exception ex) {
             textArea.setText("Error connecting to server, make sure its online!");
         }
-
-
-
     }//GEN-LAST:event_connectBtnActionPerformed
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
-        /*// TODO add your handling code here:
-        if (sendBtn.getText().equalsIgnoreCase("connect")) {
-            changeServerDetails();
-            connectToServer();
-        } else {
-            
-        }*/
         if(sendMessage.getText().equals("")) {
             return;
         } else {
-            sendMessageAndLogIt();
+            sendMessage();
         }
-
     }//GEN-LAST:event_sendBtnActionPerformed
-
-    public void keyTyped(KeyEvent e) {
-        int key = e.getKeyCode();
-        if(key == KeyEvent.VK_ENTER) {
-            e.consume();
-            if(sendMessage.getText().equals("")) {
-                return;
-            } else {
-                System.out.println("key press");
-                sendMessageAndLogIt();
-            }
-        }
-    }
-
 
     private void advanceConnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advanceConnectBtnActionPerformed
         try {
@@ -422,22 +369,17 @@ public class ClientGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_advanceConnectBtnActionPerformed
 
     private void restart() {
-
-            ClientGUI c2 = new ClientGUI();
-            c2.setVisible(true);
-            //this.setVisible(false);
-            this.dispose();
-
-
+        ClientGUI c2 = new ClientGUI();
+        c2.setVisible(true);
+        this.dispose();
     }
-    private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
 
+    private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
         sendMessageToServer("/dc", serverSocket);
         connected = false;
         disconnectFromServer();
         restart();
     }//GEN-LAST:event_disconnectBtnActionPerformed
-
 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */

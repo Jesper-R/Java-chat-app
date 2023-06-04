@@ -9,23 +9,14 @@ public class User {
     private boolean isNameSent = false;
     private UUID uuid;
 
-    private JList<String> userList;
-    public JList<String> getUserList(){
-        return userList;
-    }
-    public User(Socket socket, String name, JList<String> userList) {
+    public User(Socket socket, String name) {
         this.socket = socket;
         this.name = name;
-        this.userList = userList;
         this.uuid = UUID.randomUUID();
     }
 
     public Socket getSocket() {
         return socket;
-    }
-
-    public void setSocket(Socket socket) {
-        this.socket = socket;
     }
 
     public String getName() {
