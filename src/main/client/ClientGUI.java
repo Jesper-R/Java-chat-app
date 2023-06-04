@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class ClientGUI extends javax.swing.JFrame {
     private String HOST = "127.0.0.1";
     private boolean sentName = false;
-    private int PORT = 9000;
+    private int PORT = 4192;
     private String messages = "";
     private Socket serverSocket;
     private boolean connected = false;
@@ -412,9 +412,10 @@ public class ClientGUI extends javax.swing.JFrame {
 
     private void advanceConnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advanceConnectBtnActionPerformed
         try {
+            setName();
             changeServerDetails();
             connectToServer();
-            setName();
+            sendMessageToServer(name, serverSocket);
         } catch(Exception e) {
             textArea.setText("Error connecting to server. Make sure its on and that the server is on the right port");
         }

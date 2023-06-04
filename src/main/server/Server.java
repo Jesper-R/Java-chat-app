@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 public class Server{
     private boolean done = false;
-    private int PORT = 9000;
+    private int PORT = 4192;
 
     public static void main(String[] args) {
         new Server().startServer();
