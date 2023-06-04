@@ -49,7 +49,7 @@ public class ClientGUI extends javax.swing.JFrame {
                 }
             }, "Shutdown-thread"));
             System.out.println("hook created");
-            serverSocket = new Socket("127.0.0.1", 9000);
+            serverSocket = new Socket(HOST, PORT);
             //System.out.println("Connected to server");
             connected = true;
             connectBtn.setEnabled(false);
@@ -105,7 +105,7 @@ public class ClientGUI extends javax.swing.JFrame {
                     System.out.println("GOT USERS FROM SERVER");
                     System.out.println(message);
                     String[] users = message.split(";");
-                    //users = Arrays.copyOfRange(users, 1, users.length);
+                    users = Arrays.copyOfRange(users, 1, users.length);
                     listModel.clear();
                     for (String user : users) {
                         listModel.addElement(user);
@@ -368,10 +368,16 @@ public class ClientGUI extends javax.swing.JFrame {
 
 
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
-        setName();
-        connectToServer();
-        sendNameToServer(name, serverSocket);
-        System.out.println("Name sent to server");
+        try {
+            setName();
+            connectToServer();
+            sendMessageToServer(name, serverSocket);
+        } catch (Exception ex) {
+            textArea.setText("Error connecting to server, make sure its online!");
+        }
+
+
+
     }//GEN-LAST:event_connectBtnActionPerformed
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
@@ -410,12 +416,25 @@ public class ClientGUI extends javax.swing.JFrame {
             connectToServer();
             setName();
         } catch(Exception e) {
-            
+            textArea.setText("Error connecting to server. Make sure its on and that the server is on the right port");
         }
     }//GEN-LAST:event_advanceConnectBtnActionPerformed
 
+    private void restart() {
+
+            ClientGUI c2 = new ClientGUI();
+            c2.setVisible(true);
+            //this.setVisible(false);
+            this.dispose();
+
+
+    }
     private void disconnectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectBtnActionPerformed
+
+        sendMessageToServer("/dc", serverSocket);
+        connected = false;
         disconnectFromServer();
+        restart();
     }//GEN-LAST:event_disconnectBtnActionPerformed
 
 

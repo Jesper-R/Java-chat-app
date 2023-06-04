@@ -24,12 +24,24 @@ public class User {
         return socket;
     }
 
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
     }
 
     public UUID getUuid() {
