@@ -74,14 +74,11 @@ public class Server{
                             .collect(Collectors.joining());
                     String message = new String(Base64.getDecoder().decode(encodedMessage));
 
-                    //if the User hasn't sent their name
+                    //First message from user is going to be name. This takes it and puts it in usercontrol
                     if (!user.isNameSent()){
-                        if (message.contains(" ")) {
-                            user.setName(message.split(" ")[0]);
-                        } else {
-                            user.setName(message);
-                        }
+                        user.setName(message);
                         user.setNameSent(true);
+
                         UserControl.updateUsers();
                         UserControl.sendMessageToEveryone("[USERS];" + UserControl.getAllUsers());
                         // TODO: add to disconnect aswell

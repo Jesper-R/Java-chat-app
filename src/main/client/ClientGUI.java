@@ -96,7 +96,7 @@ public class ClientGUI extends javax.swing.JFrame {
                 }
                 if (message.contains("[USERS]")) {
                     String[] users = message.split(";");
-                    //users = Arrays.copyOfRange(users, 1, users.length);
+                    users = Arrays.copyOfRange(users, 1, users.length);
                     listModel.clear();
                     for (String user : users) {
                         listModel.addElement(user);
@@ -237,7 +237,7 @@ public class ClientGUI extends javax.swing.JFrame {
         connectBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 connectBtnActionPerformed(evt);
-                connectToServer();
+
             }
         });
 
@@ -318,7 +318,11 @@ public class ClientGUI extends javax.swing.JFrame {
 
 
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
-        // TODO add your handling code here:
+        connectToServer();
+        String name = JOptionPane.showInputDialog("Enter name");
+        sentName = true;
+        sendMessageToServer(name, serverSocket);
+        connectBtn.setEnabled(false);
     }   //GEN-LAST:event_connectBtnActionPerformed
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
